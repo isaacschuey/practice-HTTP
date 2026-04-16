@@ -1,17 +1,29 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { posts } from './post-data';
 import { Post } from './post';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataService {
+  posts = signal<Post[]>([]);
+  private http = inject(HttpClient);
 
-  posts = posts;
+  url = 'https://jsonplaceholder.typicode.com/posts';
 
-  constructor() { }
+  loadPosts = () => {
+    this.http
+      .get<Post[]>(this.url)
+      .subscribe((post: Post[]) => this.posts.set(post));
+  };
 
-  getPostById(id:number): Post{
-    return this.posts.filter(post => post.id == id)[0];
-  }
+  getPosts = (): Observable<Post[]> => {
+    return this.http.get<Post[]>(this.url);
+  };
+
+  getPostById = (id: number) => {
+    return this.posts().find((post) => post.id === id);
+  };
 }
